@@ -1,0 +1,53 @@
+<div class="container">
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="login">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter your password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-login" onclick="login()">Login</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function login() {
+        // Lấy giá trị từ các ô input
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Gửi dữ liệu đăng ký đến server
+        fetch('http://localhost:3000/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+                // Đăng nhập thành công, chuyển hướng hoặc thực hiện các hành động khác
+                console.log('Login successful');
+                console.log('User details:', data.user);
+
+                // Ví dụ: Chuyển hướng sang trang khác sau khi đăng nhập
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Xử lý khi có lỗi, ví dụ: hiển thị thông báo lỗi cho người dùng
+            });
+        }
+
+</script>

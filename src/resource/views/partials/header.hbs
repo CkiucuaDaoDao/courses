@@ -1,0 +1,150 @@
+<nav class='navbar navbar-expand-lg navbar-dark bg-dark'>
+  <div class="container">
+
+    <a class='navbar-brand' href='/'>
+      <img src="/img/logo.jpg" alt="" style="width: 40px; height: 40px;">
+    </a>
+    <button
+      class='navbar-toggler'
+      type='button'
+      data-toggle='collapse'
+      data-target='#navbarSupportedContent'
+      aria-controls='navbarSupportedContent'
+      aria-expanded='false'
+      aria-label='Toggle navigation'
+    >
+      <span class='navbar-toggler-icon'></span>
+    </button>
+
+    <div class='collapse navbar-collapse' id='navbarSupportedContent'>
+      <ul class='navbar-nav mr-auto'>
+        <li class='nav-item active'>
+          <a class='nav-link' href='/'>Trang chủ
+            <span class='sr-only'>(current)</span></a>
+        </li>
+
+        <li class='nav-item'>
+          <a class='nav-link' href='/news'>Tin tức
+            <span class='sr-only'>(current)</span></a>
+        </li>
+       
+      </ul>
+      <form class='form-inline my-2 my-lg-0'>
+        <input
+          class='form-control mr-sm-2'
+          placeholder='Search'
+          id="search-input"
+          oninput="search()"
+        />
+        <ul id="searchResults" class="search-results"></ul>
+        <button
+          class='btn btn-outline-success my-2 my-sm-0'
+          type='submit'
+        >Search</button>
+      </form>
+      <ul class='navbar-nav ml-auto'>
+        <li class='nav-item dropdown'>
+          <a
+            class='nav-link dropdown-toggle'
+            href='#'
+            id='navbarDropdown'
+            role='button'
+            data-toggle='dropdown'
+            aria-haspopup='true'
+            aria-expanded='false'
+          >
+          <img class="avatar-user" src="/img/logo.jpg" alt="">
+            Quang Vinh
+          </a>
+          <div class='dropdown-menu' aria-labelledby='navbarDropdown'>
+            <a class='dropdown-item' href='/courses/create'>Đăng khóa học</a>
+            <div class='dropdown-divider'></div>
+            <a class='dropdown-item' href='/me/stored/courses'>Khóa học của tôi</a>
+            <a class='dropdown-item' href='/me/stored/news'>Bài viết của tôi</a>
+            <div class='dropdown-divider'></div>
+            <a class='dropdown-item' href='/login'>Đăng nhập</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // ... (Trong file script.js)
+
+const input = document.getElementById('search-input');
+const resultsContainer = document.getElementById('searchResults');
+
+input.addEventListener('input', debounce(search, 300)); // Thêm debounce để tránh gửi quá nhiều yêu cầu
+
+function search() {
+    const searchTerm = input.value.toLowerCase();
+    resultsContainer.innerHTML = '';
+
+    if (searchTerm.length === 0) {
+        resultsContainer.style.display = 'none';
+        return;
+    }
+
+    // Gọi API để lấy dữ liệu gợi ý từ server
+    fetch(`/api/search?term=${searchTerm}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                resultsContainer.style.display = 'block';
+
+                data.forEach(result => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-results-item';
+                    resultItem.textContent = result;
+                    resultItem.addEventListener('click', () => {
+                        input.value = result;
+                        resultsContainer.style.display = 'none';
+                        {{!-- const serverSideSlug = getServerSideSlug(result); --}}
+                        window.location.href = `/courses/${result}`;
+                    });
+
+                    resultsContainer.appendChild(resultItem);
+                });
+            } else {
+                resultsContainer.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi lấy dữ liệu gợi ý:', error);
+            resultsContainer.style.display = 'none';
+        });
+}
+
+document.addEventListener('click', (event) => {
+    if (!resultsContainer.contains(event.target) && event.target !== input) {
+        resultsContainer.style.display = 'none';
+    }
+});
+
+// Hàm debounce để tránh gửi quá nhiều yêu cầu
+function debounce(func, wait) {
+    let timeout;
+    return function () {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(context, args);
+        }, wait);
+    };
+}
+
+{{!-- async function getServerSideSlug(result) {
+    try {
+        const response = await fetch(`/api/search/?term=${result}`);
+        const data = await response.json();
+        return data.slug;
+    } catch (error) {
+        console.error('Lỗi khi lấy slug từ server:', error);
+        return '';
+    }
+} --}}
+
+</script>
